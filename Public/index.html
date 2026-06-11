@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bibi's Cake</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: #FDF6F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .page {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.2rem;
+    }
+    .logo-img {
+      width: 210px;
+      height: 210px;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(1.3rem, 4.5vw, 2rem);
+      color: #3D1A24;
+      text-align: center;
+      line-height: 1.5;
+    }
+    h1 span { color: #E8899A; }
+    @media (prefers-reduced-motion: reduce) {
+      .logo-img { animation: none; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div class="page">
+  <img class="logo-img" src="logo.png" alt="Bibi's Cake" />
+  <h1>Something sweet is <span>on its way.</span></h1>
+</div>
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const COLORS = ['#F2A6A6','#A8D8E8','#E8899A','#f7c8ce','#c9e8f2','#f9d6dc'];
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const sprinkles = Array.from({ length: 40 }, () => make(true));
+  function make(init) {
+    return { x: Math.random()*window.innerWidth, y: init ? Math.random()*window.innerHeight : -14,
+      len: 6+Math.random()*8, w: 2+Math.random()*2, angle: Math.random()*Math.PI,
+      speed: 0.4+Math.random()*0.8, drift: (Math.random()-.5)*.4, spin: (Math.random()-.5)*.03,
+      color: COLORS[Math.floor(Math.random()*COLORS.length)], opacity: 0.3+Math.random()*.4 };
+  }
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    sprinkles.forEach((s,i) => {
+      s.y+=s.speed; s.x+=s.drift; s.angle+=s.spin;
+      if (s.y > canvas.height+20) sprinkles[i]=make(false);
+      ctx.save(); ctx.globalAlpha=s.opacity; ctx.strokeStyle=s.color;
+      ctx.lineWidth=s.w; ctx.lineCap='round';
+      ctx.translate(s.x,s.y); ctx.rotate(s.angle);
+      ctx.beginPath(); ctx.moveTo(-s.len/2,0); ctx.lineTo(s.len/2,0); ctx.stroke();
+      ctx.restore();
+    });
+    requestAnimationFrame(draw);
+  }
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
+</script>
+</body>
+</html>
